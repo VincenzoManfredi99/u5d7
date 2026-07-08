@@ -1,12 +1,11 @@
 package vincenzomanfredi.u5d7.controllers;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vincenzomanfredi.u5d7.entities.BlogPost;
 import vincenzomanfredi.u5d7.payloads.BlogPostPayload;
 import vincenzomanfredi.u5d7.services.BlogPostService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/blogpost")
@@ -18,8 +17,12 @@ public class BlogPostController {
     }
 
     @GetMapping
-    public List<BlogPost> findAll() {
-        return this.blogPostService.findAll();
+    public Page<BlogPost> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String orderBy
+    ) {
+        return this.blogPostService.findAll(page, size, orderBy);
     }
 
     @PostMapping
@@ -44,3 +47,4 @@ public class BlogPostController {
         this.blogPostService.findByIdAndDelete(blogPostId);
     }
 }
+

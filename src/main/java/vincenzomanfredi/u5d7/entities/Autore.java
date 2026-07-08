@@ -1,18 +1,25 @@
 package vincenzomanfredi.u5d7.entities;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.Random;
 
+@Entity
+@Table(name = "autori")
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class Autore {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String name;
     private String surname;
     private String email;
@@ -25,7 +32,5 @@ public class Autore {
         this.email = email;
         this.data = data;
         this.avatar = "https://picsum.photos/200/300";
-        Random random = new Random();
-        this.id = random.nextInt(1, 10000);
     }
 }

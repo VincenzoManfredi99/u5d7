@@ -1,12 +1,11 @@
 package vincenzomanfredi.u5d7.controllers;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vincenzomanfredi.u5d7.entities.Autore;
 import vincenzomanfredi.u5d7.payloads.AutorePayload;
 import vincenzomanfredi.u5d7.services.AutoreService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/autore")
@@ -18,8 +17,12 @@ public class AutoreController {
     }
 
     @GetMapping
-    public List<Autore> findAll() {
-        return this.autoreService.findAll();
+    public Page<Autore> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String orderBy
+    ) {
+        return this.autoreService.findAll(page, size, orderBy);
     }
 
     @PostMapping

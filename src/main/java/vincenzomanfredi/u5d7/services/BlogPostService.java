@@ -1,67 +1,64 @@
 package vincenzomanfredi.u5d7.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import vincenzomanfredi.u5d7.entities.Autore;
 import vincenzomanfredi.u5d7.entities.BlogPost;
 import vincenzomanfredi.u5d7.exceptions.NotFoundException;
 import vincenzomanfredi.u5d7.payloads.BlogPostPayload;
-
-import java.util.ArrayList;
-import java.util.List;
+import vincenzomanfredi.u5d7.repositories.BlogPostRepository;
 
 @Service
 @Slf4j
 public class BlogPostService {
-    private final List<BlogPost> blogPostDB = new ArrayList<>();
+    private final BlogPostRepository blogPostRepository;
+    private final AutoreService autoreService;
 
-    public List<BlogPost> findAll() {
-        return this.blogPostDB;
+    public BlogPostService(BlogPostRepository blogPostRepository, AutoreService autoreService) {
+        this.blogPostRepository = blogPostRepository;
+        this.autoreService = autoreService;
     }
 
+    public Page<BlogPost> findAll(int page, int size, String orderBy) {
+        if (size > 50) size = 50;
+        if (size < 0) size = 10;
+        if (page < 0) page = 0;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return this.blogPostRepository.findAll(pageable);
+    }
+
+
     public BlogPost saveBlogPost(BlogPostPayload body) {
-        BlogPost newBlogPost = new BlogPost(body.getCategoria(), body.getTitolo(), body.getContenuto(), body.getTempoDiLettura());
-        this.blogPostDB.add(newBlogPost);
-        log.info("L'utente " + newBlogPost.getId() + " è stato creato");
-        return newBlogPost;
+        Autore autore = this.autoreService.findById(body.getAutoreId());
+        BlogPost newBlogPost = new BlogPost(body.getCategoria(), body.getTitolo(), body.getContenuto(), body.getTempoDiLettura(), autore);
+        return this.blogPostRepository.save(newBlogPost);
     }
 
     public BlogPost findById(long blogPostId) {
-        BlogPost found = null;
-
-        for (BlogPost blogPost : this.blogPostDB) {
-            if (blogPost.getId() == blogPostId) found = blogPost;
-        }
-        if (found == null) throw new NotFoundException(blogPostId);
-        return found;
+        return this.blogPostRepository.findById(blogPostId).orElseThrow(() -> new NotFoundException(blogPostId));
     }
 
     public BlogPost findByIdAndUpdate(long blogPostId, BlogPostPayload body) {
-        BlogPost found = null;
+        BlogPost found = this.findById(blogPostId);
 
-        for (BlogPost blogPost : this.blogPostDB) {
-            if (blogPost.getId() == blogPostId) {
-                found = blogPost;
-                found.setCategoria(body.getCategoria());
-                found.setTitolo(body.getTitolo());
-                found.setContenuto(body.getContenuto());
-                found.setTempoDiLettura(body.getTempoDiLettura());
+        found.setCategoria(body.getCategoria());
+        found.setTitolo(body.getTitolo());
+        found.setContenuto(body.getContenuto());
+        found.setTempoDiLettura(body.getTempoDiLettura());
 
-                found.setCover("https://ui-avatars.com/api/?name=" + body.getTitolo() + "+" + body.getContenuto());
-            }
-        }
+        Autore autore = this.autoreService.findById(body.getAutoreId());
+        found.setAutore(autore);
 
-        if (found == null) throw new NotFoundException(blogPostId);
-        return found;
+        return this.blogPostRepository.save(found);
     }
 
     public void findByIdAndDelete(long blogPostId) {
-        BlogPost found = null;
-
-        for (BlogPost blogPost : this.blogPostDB) {
-            if (blogPost.getId() == blogPostId) found = blogPost;
-        }
-        if (found == null) throw new NotFoundException(blogPostId);
-        this.blogPostDB.remove(found);
+        BlogPost found = this.findById(blogPostId);
+        this.blogPostRepository.delete(found);
     }
-
 }
