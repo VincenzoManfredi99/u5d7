@@ -12,8 +12,5 @@ public class BlogPostPayload {
     private String titolo;
     private String contenuto;
     private int tempoDiLettura;
-
-    public long getAutoreId() {
-        return 0;
-    }
+    private long autoreId;
 }
